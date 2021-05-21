@@ -1,0 +1,9 @@
+boto3
+s3fs
+py7zr
+numpy
+pandas
+geopandas
+contextily
+mapclassify
+pyproj
