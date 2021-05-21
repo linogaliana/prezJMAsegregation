@@ -112,3 +112,74 @@ s3.download_file(bucket, "phonesegregation/groupe-787/data/shapefiles/communes/c
 
 shp_com = gpd.read_file("comf.TAB", driver="MapInfo File", crs=27572)
 shp_com = shp_com.to_crs(4326)
+
+
+shp_6b = shapefile_hour(data = df3, hour = 6, shapefile = shapefile, colname="p_grid")
+shp_16b = shapefile_hour(data = df3, hour = 16, shapefile = shapefile, colname="p_grid")
+shp_20b = shapefile_hour(data = df3, hour = 20, shapefile = shapefile, colname="p_grid")
+shp_23b = shapefile_hour(data = df3, hour = 23, shapefile = shapefile, colname="p_grid")
+
+
+def expand_points(shapefile,
+                  index_var = "grid_id",
+                  weight_var = 'prop',
+                  radius_sd = 100,
+                  crs = 2154):
+    """
+    Multiply number of points to be able to have a weighted heatmap
+    :param shapefile: Shapefile to consider
+    :param index_var: Variable name to set index
+    :param weight_var: Variable that should be used
+    :param radius_sd: Standard deviation for the radius of the jitter
+    :param crs: Projection system that should be used. Recommended option
+      is Lambert 93 because points will be jitterized using meters
+    :return:
+      A geopandas point object with as many points by index as weight
+    """
+
+    shpcopy = shapefile
+    shpcopy = shpcopy.set_index(index_var)
+    shpcopy['npoints'] = np.ceil(shpcopy[weight_var])
+    shpcopy['geometry'] = shpcopy['geometry'].centroid
+    shpcopy['x'] = shpcopy.geometry.x
+    shpcopy['y'] = shpcopy.geometry.y
+    shpcopy = shpcopy.to_crs(crs)
+    shpcopy = shpcopy.loc[np.repeat(shpcopy.index.values, shpcopy.npoints)]
+    shpcopy['x'] = shpcopy['x'] + np.random.normal(0, radius_sd, shpcopy.shape[0])
+    shpcopy['y'] = shpcopy['y'] + np.random.normal(0, radius_sd, shpcopy.shape[0])
+
+    gdf = gpd.GeoDataFrame(
+        shpcopy,
+        geometry = gpd.points_from_xy(shpcopy.x, shpcopy.y),
+        crs = crs)
+
+    return gdf
+
+data_points_6h = expand_points(shp_6b)
+data_points_16h = expand_points(shp_16b)
+data_points_20h = expand_points(shp_20b)
+data_points_23h = expand_points(shp_23b)
+
+import btbpy
+shp_6b['x'] = shp_6b.geometry.centroid.x
+shp_6b['y'] = shp_6b.geometry.centroid.y
+df = pd.DataFrame(shp_6b.drop(columns='geometry'))
+df = df[["x","y","prop"]].dropna()
+df["prop"] = df["prop"]*100
+df2 = btbpy.kernelSmoothing(df, "2154", 100, 1000)
+
+n_bins_ranges = np.append(np.linspace(0, 12, 5), 1)
+n_bin = n_bins_ranges.size-1  # Discretizes the interpolation into bins
+norm = mc.BoundaryNorm(n_bins_ranges, ncolors = n_bin)
+# Preparing borders for the legend
+bound_prep = np.round(n_bins_ranges, 2)
+cmap = cm.get_cmap('RdYlGn_r', n_bin)
+
+
+xmin = 2.10285
+xmax = 2.53946
+ymax = 48.996438
+ymin = 48.757567
+
+df2.plot(column = "prop", cmap=cmap, figsize=(12,12))
+plt.axis('off')
