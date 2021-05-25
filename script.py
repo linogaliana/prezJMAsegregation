@@ -155,31 +155,80 @@ def expand_points(shapefile,
 
     return gdf
 
-data_points_6h = expand_points(shp_6b)
-data_points_16h = expand_points(shp_16b)
-data_points_20h = expand_points(shp_20b)
-data_points_23h = expand_points(shp_23b)
+cols = ['day', 'hour', 'simulation',
+                            'class', 'period',
+                            'p_grid', 'grid_id', 'p_pop']
 
-import btbpy
-shp_6b['x'] = shp_6b.geometry.centroid.x
-shp_6b['y'] = shp_6b.geometry.centroid.y
-df = pd.DataFrame(shp_6b.drop(columns='geometry'))
-df = df[["x","y","prop"]].dropna()
-df["prop"] = df["prop"]*100
-df2 = btbpy.kernelSmoothing(df, "2154", 100, 1000)
+with fs.open('s3://' + bucket + "/" + path) as f:
+    df = pd.read_csv(f,
+                     names=cols)
+    
+df = df[(df['simulation'] == 'simulation_0') & (df['day'] == "weekjob")]
 
-n_bins_ranges = np.append(np.linspace(0, 12, 5), 1)
-n_bin = n_bins_ranges.size-1  # Discretizes the interpolation into bins
-norm = mc.BoundaryNorm(n_bins_ranges, ncolors = n_bin)
-# Preparing borders for the legend
-bound_prep = np.round(n_bins_ranges, 2)
-cmap = cm.get_cmap('RdYlGn_r', n_bin)
+def heatmap_hour(data, hour = 6):
+    df2 = data[data['hour'] == hour]
 
+    df2 = (df2
+        .assign(
+        sum_p_grid=lambda x: x.groupby(['grid_id', 'hour']).transform('sum')['p_grid'])
+    )
 
-xmin = 2.10285
-xmax = 2.53946
-ymax = 48.996438
-ymin = 48.757567
+    df3 = df2[(df2['class'] == 1) | ((df2['class'] == 0) & (df2['p_grid'] == df2['sum_p_grid']))]
 
-df2.plot(column = "prop", cmap=cmap, figsize=(12,12))
-plt.axis('off')
+    df3.loc[df3['class'] == 0, 'p_grid'] = 0
+    df3 = df3[df3['sum_p_grid'] > 0]    
+    shp_6b = shapefile_hour(data = df3, hour = hour, shapefile = shapefile, colname="p_grid")
+    shp_6b['x'] = shp_6b.geometry.centroid.x
+    shp_6b['y'] = shp_6b.geometry.centroid.y
+
+    df = pd.DataFrame(shp_6b.drop(columns='geometry'))
+    df = df[["x","y","prop"]].dropna()
+    df2 = btbpy.kernelSmoothing(df, "2154", 500, 2000)
+
+    plt.clf()
+    fig, ax = plt.subplots(1, 1, figsize = (10,10))
+
+    df2.to_crs(4326).plot(ax=ax,
+                          column = "prop",
+                          edgecolor=None,
+             cmap = matplotlib.colors.ListedColormap(['#1a9641', '#a6d96a', '#ffffc0', '#fdae61', '#d7191c']),
+             norm = matplotlib.colors.BoundaryNorm(vals, cmap.N),
+                          alpha = 0.6,
+             figsize=(12,10))
+    ctx.add_basemap(ax = ax, source=ctx.providers.Stamen.Toner, crs = 4326)
+    plt.axis('off')
+    ax.set_xlim(2.10285, 2.53946)
+    ax.set_ylim(48.757567, 48.996438)
+    plt.savefig('output/hour' + str(hour) + ".png")
+    
+    
+# [heatmap_hour(df, i) for i in range(24)]
+
+import glob
+x = glob.glob("./output/*.png")
+import re
+
+def atof(text):
+    try:
+        retval = float(text)
+    except ValueError:
+        retval = text
+    return retval
+
+def natural_keys(text):
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+    float regex comes from https://stackoverflow.com/a/12643073/190597
+    '''
+    return [ atof(c) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', text) ]
+
+x.sort(key=natural_keys)
+x
+
+import imageio
+images = []
+for filename in x:
+    images.append(imageio.imread(filename))
+imageio.mimsave('./output/movie.gif', images)
