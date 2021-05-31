@@ -1,0 +1,808 @@
+---
+title: 'Dynamic approach of spatial segregation: a framework with mobile phone data'
+author: "Lino Galiana (INSEE)"
+date: "November 15th, 2019"
+institute: |
+  | With Benjamin Sakarovitch (INSEE), François Sémécurbe (INSEE) and Zbigniew Smoreda (Orange Labs)
+  |
+  | JMA 2021 Virtual Conference
+output:
+  beamer_presentation:
+    keep_tex: true
+    toc: true
+    slide_level: 3
+    theme: "default"
+    includes:
+      in_header: header_pagenrs.tex
+  keep_tex: true
+  toc: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(tinytex.verbose = TRUE)
+```
+
+
+# Introduction
+
+## Why do we need mobile phone data to measure segregation ? 
+
+<!------------------------------------------------------->
+
+### Residential segregation drivers: housing
+
+* Income gradient from `r kableExtra::text_spec("housing prices", color = "darkblue")` (Alonso, `r kableExtra::text_spec("1964", color = "red")`)
+    + High opportunity cost of transportation: wealthiest live in city center, poorest in suburbs
+    + High valuation of housing space: wealthiest live in suburbs, poorest in city center
+\medskip
+
+* Social housing aims to ensure social mixing
+    + Social housing clusters poor population in specific areas (Verdugo and Toma, `r kableExtra::text_spec("2018", color = "red")`)
+    + Dynamic effect: school segregation creates persistence
+    + People can coexist without interaction (Chamboredon and Lemaire, `r kableExtra::text_spec("1970", color = "red")`)
+
+
+<!------------------------------------------------------->
+
+
+<!------------------------------------------------------->
+
+### Residential segregation drivers: preferences and mobility
+
+* `r kableExtra::text_spec("Heterogeneity in preferences", color = "darkblue")` have spatial effects
+    + Schelling (`r kableExtra::text_spec("1969", color = "red")`): clustering based on preference for neighborhood
+    + Tiebout  (`r kableExtra::text_spec("1956", color = "red")`): spatial sorting based on public goods preferences
+\medskip
+
+* `r kableExtra::text_spec("Mobility", color = "darkblue")` plays a key role to understand segregation
+    + Long run: high quality public good bring people in neighborhood, affecting housing price (Black, `r kableExtra::text_spec("1999", color = "red")`; Fack and Grenet, `r kableExtra::text_spec("2010", color = "red")`)
+    + Within-week mobility brings together people from different neighborhood
+\medskip
+
+* `r kableExtra::text_spec("Infraday", color = "darkblue")` dynamic can be strong:
+    + Davis et al. (`r kableExtra::text_spec("2019", color = "red")`): outside segregation (restaurants) 50\% lower than residential segregatio
+    + Athey et al. (`r kableExtra::text_spec("2019", color = "red")`): similar scale for public space as parks
+
+
+
+
+<!---
+\item Some evidence on the effect of preferences over individual location
+  \begin{itemize}
+    \item Black (\textcolor{red}{1999}): parents are willing to pay 2.5 percent more for a 5 percent increase in test scores.
+  \end{itemize}  \medskip
+---->
+
+<!------------------------------------------------------->
+
+### Goal of the paper
+
+From a picture
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[c]{0.45\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/income_D1_Paris_map.pdf}
+      \caption{Low-income population (first decile)}
+  \end{subfigure}\hskip 1em%
+  \begin{subfigure}[c]{0.45\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/income_D9_Paris_map.pdf}
+      \caption{High-income population (last decile)}
+  \end{subfigure}
+\end{figure}
+
+to a more complete \href{https://github.com/linogaliana/prezJMAsegregation/blob/master/output/movie.gif}{sequence}
+
+<!------------------------------------------------------->
+
+<!------------------------------------------------------->
+
+### Residential segregation: limitations of tax data
+
+\begin{itemize}
+  \item Good picture of residential segregation with tax \& census data
+  \item But fixed picture
+  \begin{itemize}
+    \item People spend time out of their living neighborhood:
+    \item Experienced segregation vs residential segregation
+  \end{itemize}
+  \item Numeric traces useful to know where people go
+  \begin{itemize}
+      \item Davis et al. (`r kableExtra::text_spec("2019", color = "red")`): Yelp data
+      \item Athey et al. (`r kableExtra::text_spec("2020", color = "red")`): GPS data
+  \end{itemize}
+\end{itemize}
+
+<!------------------------------------------------------->
+
+
+<!------------------------------------------------------->
+
+### Residential segregation: limitations of tax data
+
+\begin{itemize}
+
+  \item \textcolor{darkblue}{Theil index} (Theil, `r kableExtra::text_spec("1984", color = "red")`)
+    \begin{align*}
+      H = \frac{n_c}{N^{\text{city}}} \sum_{c=1}^C \frac{E(p^{\text{city}}) - E(p_c)}{E(p^{\text{city}})}
+    \end{align*}
+    \begin{itemize}
+    \item Entropy measures diversity ($E(p) = -p\log(p) - (1-p)\log(1-p)$)
+    \item Compares entropy at city and cell level
+    \end{itemize}
+  \item Administrative data $\Rightarrow$ \textcolor{darkblue}{residential segregation}:
+  \begin{itemize}
+    \item Static vision of segregation
+    \item Separation of income groups within residential space
+    \item No information on visited places
+  \end{itemize} \medskip
+  \item Mobility continuously reshapes income spatial distribution
+  \begin{itemize}
+    \item Need high-frequency geolocated data...
+    \item ... combined with traditional data to characterize individuals
+  \end{itemize}
+
+\end{itemize}
+
+<!------------------------------------------------------->
+
+
+<!------------------------------------------------------->
+
+## Research question
+
+<!------------------------------------------------------->
+
+### Research question
+
+* Main questions:
+    + How do mobility affect urban segregation ?
+    + Do high-frequency data help us in identifying patterns in segregation that cannot be understood with administrative data?
+    + Can we measure heterogeneity in spatial frictions within a city using high resolution mobility flows ?
+\medskip
+
+* Contribution:
+    + Combining phone and traditional data
+    + Proposition of a methodology to ensure combination robustness
+    + Fine spatial and temporal granularity to understand segregation
+    + Gravity approach with large scale data to measure cost of mobility
+
+
+
+<!--------
+\begin{itemize}
+  \item Dissimilarity index (Duncan and Duncan, \textcolor{red}{1955} ; Massey and Denton, \textcolor{red}{1988}) is frequently used
+  \begin{align*}
+    ID = \frac{1}{2} \sum_{j=1}^J \bigg| \frac{w_j}{W_T}-\frac{n_j - w_j}{N_T - W_T} \bigg|
+  \end{align*}
+\end{itemize}
+---->
+
+<!------------------------------------------------------->
+
+
+<!------------------------------------------------------->
+### Methodology adopted
+
+* We analyze `r kableExtra::text_spec("infraday dynamic", color = "darkblue")`:
+    + `r kableExtra::text_spec("48 points", color = "darkblue")`: 24 for weekdays, 24 for weekend
+\medskip
+
+* Requires `r kableExtra::text_spec("time depending segregation indexes", color = "darkblue")`
+    + Theil index series for each city
+\medskip
+
+* Gravity model to measure spatial frictions
+    + Takes into account the zero-flows problem
+\medskip
+
+* `r kableExtra::text_spec("Paris, Lyon and Marseille", color = "darkblue")`
+    + Agglomeration level: city centers and suburbs
+    + More than 13 millions people in tax data
+
+<!------------------------------------------------------->
+
+# Data
+
+### Principle
+
+* Caracterize phone users from living environment
+* Probability of belonging to first/last decile from observed income distribution in tax data
+
+\includegraphics[page=12, width = \linewidth]{./pics/CNIS.pdf}
+
+
+
+## Phone data
+
+<!------------------------------------------------------->
+### Phone data {label="phone data"}
+
+
+* `r kableExtra::text_spec("Orange data September 2007", color = "darkblue")`
+    + `r kableExtra::text_spec("18.5 millions", color = "darkblue")` SIM cards ($\approx$ 1/3 French population)
+    + Text messages and call: 3 billions events
+    + `r kableExtra::text_spec("Geocoding at antenna level", color = "darkblue")` (exact $(x,y)$ unknown)
+\medskip
+
+* Transformation into 500x500 meters cell level presence
+\hyperlink{probabilization}{\beamerbutton{Methodology here}}
+\medskip
+
+* We do not use interaction dimension
+    + Plan for future research on social segregation
+\medskip
+
+* Big data volume is a challenge
+
+
+<!------------------------------------------------------->
+
+
+<!------------------------------------------------------->
+### Phone data
+
+\begin{itemize}
+  \item 2007 is old:
+\begin{itemize}
+  \item People were not using their phone as much as now
+  \item Temporal sparsity at individual level (in average 4 points a day by user)
+\end{itemize}
+\end{itemize}
+
+
+\begin{tiny}
+\begin{table}[]
+    \centering
+    \begin{tabular}{p{0.3\linewidth}ccccccccc}
+\toprule
+& mean & s.d. & min & P10 & P25 & median & P75 & P90 & max  \\
+\midrule
+Average number of daily events per user & $4.3$ & $3.6$ & $1$ & $1.4$ & $2$ & $3.1$ & $5.4$ & $8.7$ & $123$ \\
+Number of distincts days users appear & $20$ & $9.2$ & $1$ & $5$ & $13$ & $23$ & $28$ & $30$ & $30$ \\
+Average number of events between 7PM and 9AM per user & $2.4$ & $1.7$ & $0$ & $1$ & $1.3$ & $1.9$ & $2.9$ & $4.4$ & $87$ \\
+Number of distincts days users appear between 7PM and 9AM & $15.2$ & $9.4$ & $0$ & $2$ & $7$ & $15$ & $24$ & $28$ & $30$ \\
+\midrule
+\multicolumn{4}{l}{Number of observations: } & \multicolumn{2}{c}{3,024,884,663} \\
+\multicolumn{4}{l}{Number of unique phone users:} & \multicolumn{2}{c}{18,541,440} \\
+\bottomrule
+    \end{tabular}
+    \caption{Orange 2007 CDR : summary statistics of September data}
+    \label{tab:statCDR2007}
+\end{table}
+
+\end{tiny}
+
+<!------------------------------------------------------->
+
+
+## Tax data
+
+
+
+
+### Tax data
+
+* `r kableExtra::text_spec("2014 geocoded tax data", color = "darkblue")` at $(x,y)$ level
+    + Income by consumption unit
+\medskip
+
+* Income based segregation
+    + Distribution of income extremes (first and last deciles)
+    + Relative definition of income: is individual wealthier/poorer than a city reference level ?
+\medskip
+
+*  `r kableExtra::text_spec("Bimodal approach", color = "darkblue")`
+    + First decile vs others
+    + Last  decile vs others
+\medskip
+
+### Tax data
+
+\begin{itemize}
+  \setlength\itemsep{0.5em}
+  \item Sub-population (first/last decile) frequency in cell
+  \item \textcolor{darkblue}{Spatial aggregation} at cell level $i$
+  \begin{align*}
+      p_i^{D1} = \mathbb{P}\big(y_x < \mu^{D1}  \big) = \mathbb{E}\big( \mathbf{1}_{\{y_x < \mu^{D1}\}} \big) = \frac{1}{n_i} \sum_{x = 1}^{n_i} \mathbf{1}_{\{y_x < \mu^{D1}\}} \\
+      p_i^{D9} = \mathbb{P}\big(y_x > \mu^{D9}  \big) = \mathbb{E}\big( \mathbf{1}_{\{y_x > \mu^{D9}\}} \big) = \frac{1}{n_i} \sum_{x = 1}^{n_i} \mathbf{1}_{\{y_x > \mu^{D9}\}}
+  \end{align*}
+  \item If $p_i>0.1$, over-representation of subpopulation in cell
+  \item That frequency is used to simulate phone user status given their simulated residence
+\end{itemize}
+
+
+### Tax data
+
+* Intuitions regarding city segregation from tax data
+    + e.g. Paris: more segregation at the top
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.6\textwidth]{./pics/dissimilarity_D1D9.pdf}
+\caption{Dissimilarity index for main French cities}
+\end{figure}
+
+
+# Dynamic segregation
+
+## Methodology to build segregation index
+
+### Workflow {label="workflow methodo"}
+
+* Phone user status is simulated from his/her phone track (only personal information) and neighborhood level tax aggregates
+* 3 steps to estimate segregation dynamics:
+    1. `r kableExtra::text_spec("Home estimation", color = "darkblue")`
+        + Estimate probabilities that individual lives in some neighborhood given nighttime (19 pm - 9 am) phone track
+    2. `r kableExtra::text_spec("Home cell and income simulations", color = "darkblue")`
+        + Home simulation knowing cell level probability sequences
+        + Income simulation given first/last decile frequence appearance in tax data ($p_i$)
+        + Test other designs to check robustness of income simulation
+    3. `r kableExtra::text_spec("Compute segregation indexes", color = "darkblue")`
+        + They depend on observation time $t$ (dynamic approach)
+
+\hyperlink{methodo home}{\beamerbutton{Details for step 1 and 2 here}}
+
+
+### Segregation index {label="index prez"}
+
+\begin{itemize}
+\item Two typical days: weekdays, weekend
+\item Individual probabilities at cell level on a given time window: $\mathbb{P}_x(c_{it})$ \hyperlink{annexeCarreaux}{\beamerbutton{Details}}
+\item Probabilize \textcolor{darkblue}{Theil index} (as well as other indices):
+
+\begin{small}
+\begin{align*}
+\label{eq: generalized theil index H}
+    H_t = \sum_{c=1}^C
+    \frac{
+    \overbrace{\sum_{x \in \mathcal{X}} \mathbb{P}_{x,t}(c)}^{\substack{\text{Number people of income group }g \\ \text{that are observed at time } t \text{in cell } c}}
+    }{
+    \underbrace{\text{card}(\mathcal{X})}_{\substack{\text{Number people of income group }g \\ \text{that are observed at time } t}}
+    }
+    \frac{E(p_{c,t}) - E(p_{t}^{\text{city}})}{E(p_{t}^{\text{city}})}
+\end{align*}
+\end{small}
+
+\item Remainder, standard index:
+    \begin{align*}
+      H = \frac{n_c}{N^{\text{city}}} \sum_{c=1}^C \frac{E(p^{\text{city}}) - E(p_c)}{E(p^{\text{city}})}
+    \end{align*}
+\end{itemize}
+
+
+## Results at city level
+
+### Segregation dynamics {label="segregation results"}
+
+\begin{itemize}
+\item City-level segregation evolution across time
+  \begin{itemize}
+  \item People not observed at a given hour of the night (19-9) are assumed to be at home
+  \item This removes downward bias in index with respect to tax data
+  \end{itemize}
+  \item Dynamic robust to other income simulation methods
+\begin{itemize}
+  \item Alternative simulation: nighttime level affected but dynamics keep the same pattern
+\end{itemize}
+\end{itemize}
+
+\begin{table}[]
+\resizebox{\textwidth}{!}{%
+
+  \centering
+  \begin{tabular}{p{0.3\linewidth}cccccc}
+  \toprule
+  & \multicolumn{2}{c}{Paris} & \multicolumn{2}{c}{Lyon} & \multicolumn{2}{c}{Marseille} \\
+  & Low-income & High-income & Low-income & High-income & Low-income & High-income \\
+  \midrule
+  & \multicolumn{6}{c}{Weekdays} \\
+  Max amplitude & 0.05 & 0.12 & 0.06 & 0.1 & 0.08 & 0.11\\
+  Relative amplitude (\%) & \textcolor{blue}{76.72} & 68.77 & 88.03 & 82.03 & 77.82 & 77.8 \\
+  Within night (19h-9h) relative amplitude (\%) & \textcolor{blue}{61.67} & 55.5 & 71.46 & 65.56 & 64.46 & 61.48 \\
+  \bottomrule
+  \multicolumn{6}{l}{Max amplitude $H^{\text{max}} - H^{\text{min}}$} \\
+  \multicolumn{6}{l}{Relative amplitude (\%): $1 - H^{\text{min}}/H^{\text{max}}$} \\
+  \end{tabular}}
+\end{table}
+
+
+### Segregation dynamics: low-income
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{./pics/bootstrap_index_H_D1.pdf}
+\caption{Low-income segregation dynamics (50 replications bootstrap)}
+\end{figure}
+
+
+
+### Segregation dynamics: high-income
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{./pics/bootstrap_index_H_D9.pdf}
+\caption{High-income segregation dynamics (50 replications bootstrap)}
+\end{figure}
+
+
+### Segregation dynamics: comparing cities and income groups
+
+* Significant difference between nighttime and daytime segregation levels
+    + Segregation starts to decrease around 6-7am and goes up after 4-5pm
+    + No significant difference between weekend and weekdays $\Rightarrow$ separate saturday and sunday ?
+\medskip
+
+* Differences in level observed in tax data also present in phone data
+    + e.g. Paris: segregation higher at the top
+\medskip
+
+* Mobile phone inform us on dynamics:
+    + Decrease stronger in Marseille and Lyon than in Paris
+    + Track neighborhood composition \hyperlink{clustering}{\beamerbutton{Results here}}
+\medskip
+    + Further research: can we identify some inclusive/exclusive cities ?
+
+### Evolution of city structure across time
+
+\begin{small}
+e.g. Low-income concentration at two different times (6am and 4pm). 
+\href{https://github.com/linogaliana/prezJMAsegregation/blob/master/output/movie.gif}{Full sequence here}
+\end{small}
+
+
+
+\begin{figure}
+
+  \centering
+  \begin{subfigure}[c]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/paris_mobile_hour6_D1_english.png}
+  \end{subfigure}
+  \begin{subfigure}[c]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/paris_mobile_hour16_D1_english.png}
+  \end{subfigure}
+
+
+\end{figure}
+
+
+## Clustering Paris by neighborhood population pattern
+
+### Principle {label=clustering}
+
+\begin{itemize}
+  \item Clustering to identify spaces that share common population composition characteristics
+  \begin{itemize}
+    \item Will be related to places characteristics (infrastructures...)
+  \end{itemize}
+  \item sequence of low-income and high-income concentrations in our cells
+  \item k-means classification algorithm
+  \item 4 clusters is motivated by the trade-off between variety and parsimony.
+\end{itemize}
+
+
+### Results
+
+\begin{figure}
+
+  \centering
+  \begin{subfigure}[c]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/typo.png}
+  \end{subfigure}
+  \begin{subfigure}[c]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{./pics/paris_kmeans_prof.pdf}
+  \end{subfigure}
+
+
+\end{figure}
+
+
+
+# Gravity model from urban flows
+
+## Specification
+
+### Gravity model with origin-destination flows
+
+\begin{align}
+p_{i \to j}^g = a \frac{M_i^{\beta_1}M_j^{\beta_2}}{D_{ij}^{\beta_3}}
+\end{align}
+
+
+* Mobile phone literature refer to gravity equation (e.g. Krings *et al*, `r kableExtra::text_spec("2009", color = "red")`)
+    + Does not estimate distance-decay with robust methodology
+    + Some common caveats of gravity equation (e.g. zero-flows problem) need to be accounted
+\medskip
+
+* We observe only strictly positive flows (censoring problem)
+    + Loglinearized OLS equations are biased
+\medskip
+
+* Silva \& Tenreyro (`r kableExtra::text_spec("2006", color = "red")`) and Silva \& Tenreyro (`r kableExtra::text_spec("2011", color = "red")`):
+    + Augment observed sample with every potential flows
+    + Count data models (Poisson) more suited than a log-linearized OLS equation
+\medskip
+
+* When large share of zeros (our case): zero-inflated count model
+
+### Gravity model with origin-destination flows
+
+* We propose to use estimation strategies derived from international trade theory...
+\medskip
+
+* ... with urban flows measured using mobile phone data
+    + Likelihood of being in cell $c_i$ knowing people live in cell $c_j$
+    + Origin-destination flows at 500 meters level
+\medskip
+
+* Estimate heterogeneity in distance costs:
+    + Spatial dimension: suburbs vs center
+    + Social dimension: low-income vs high-income
+
+
+\begin{align}
+\begin{array}{c @{} c}
+& p_{i \to j}^g \sim \pi \delta_0 + (1-\pi) \mathcal{NB}(\lambda) \\
+\text{(Selection) \qquad } &  \text{logit}(\pi) = \sum_i \alpha_i z_i + u_i \\
+\text{(Outcome)\qquad} & \lambda(X_{ij}) = \mathbb{E}_{f, \theta}(p_{i \to j}^g|X_{ij}) = \exp(\beta^{\intercal} X_{ij}) \\ \end{array}
+\end{align}
+
+* BIC: Choice of negative binomial (outcome) with probit link (selection)
+
+## Results
+
+### Results (Marseille)
+
+
+\input{tables/gravity/gravity_negbinom_marseille_subset.tex}
+
+### Results (Paris)
+
+\input{tables/gravity/gravity_negbinom_paris_subset.tex}
+
+
+### Results (Lyon)
+
+\input{tables/gravity/gravity_negbinom_lyon_subset.tex}
+
+
+# Conclusion
+
+### Conclusion
+
+* Bringing together phone and tax data requires methodological foundations
+* Segregation:
+    + Acme during nighttime/hometime
+    + Goes down by $\approx$ 50\% by daytime
+    + Results consistent with Davis et al (`r kableExtra::text_spec("2019", color = "red")`) and Athey et al (`r kableExtra::text_spec("2019", color = "red")`)
+* Mobility cost:
+    + Depends on urban structure: Marseille vs Paris/Lyon
+    + Some heterogeneity given neighborhood income level: e.g. low-income neighborhood in Marseille
+
+
+<!------------------------- APPENDIX ----------------------------->
+# Appendix
+
+<!-------------
+\begin{frame}[label=probabilization]{FDFF}
+
+\hyperlink{phone data}{\beamerbutton{Methodology here}}.
+
+
+\end{frame}
+----------------->
+
+## Probabilization
+
+### Phone users' presence probabilization {label="probabilization"}
+
+\hyperlink{phone data}{\beamerbutton{Back to slide}}
+
+\begin{figure}[ht]
+\begin{minipage}[b]{0.3\linewidth}
+\centering
+  \includegraphics[width = \textwidth]{./pics/points.pdf}
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[b]{0.3\linewidth}
+\centering
+\includegraphics[width=\textwidth]{./pics/points_and_voronoi.pdf}
+\end{minipage}
+\end{figure}
+
+
+\begin{itemize}
+    \setlength\itemsep{1em}
+  \item Mobile phone litterature does not dissociate:
+  \begin{itemize}
+  \item \textcolor{darkblue}{Coverage area}: observations at antenna level into presence area
+  \item \textcolor{darkblue}{Statistical unit}: economic information level
+  \end{itemize}
+  \item Coverage area: \textcolor{darkblue}{Voronoi tesselation}
+  \begin{itemize}
+  \item Each point in space is associated with closest antenna
+  \end{itemize}
+  \item However, \textcolor{darkblue}{must not be analysis statistical unit}
+  \begin{itemize}
+  \item Partition depends too much on antennas local density
+  \end{itemize}
+\end{itemize}
+
+<!---------------------------------------->
+
+### Phone users' presence probabilization
+
+```{r}
+# source("illustration_voro_to_grid.R")
+```
+
+
+\begin{itemize}
+  \item Cell level probabilization to abstract from voronoi
+  \begin{itemize}
+    \item Knowing call has been observed from antenna $v_j$, probability it happened into cell $c_i$? (Bayes rule)
+  \end{itemize}
+%\begin{align*}
+%p_i^j := \mathbb{P}\big( c_i | v_j \big) = \frac{\mathbb{P}\big( c_i \cap v_j \big)}{\mathbb{P}(v_j)} = \frac{\mathcal{S}\big( c_i \cap v_j \big)}{\mathcal{S}(v_j)}
+%\end{align*}
+%\item Probabilités au niveau des carreaux $c_i$ sont toujours conditionnelles à des observations au niveau des antennes/voronoi $v_j$
+\item \textcolor{darkblue}{500x500m cell level}
+  \begin{itemize}
+    \item Phone data: probabilize both presence and home
+    \item Tax data: local aggregates at cell level
+  \end{itemize}
+  \item Illustration in next slide for home detection:
+  \begin{itemize}
+    \item 2/3 events located in $v_2$ ; 1/3 located in $v_1$
+    \item Grid probabilities $(\mathbb{P}(c_i|v_j))_{i,j}$ via Bayes' rule (see (c) and (d))
+    \item With uninformative prior, home detection given by (e)
+    \item If population denser in tiles that intersect $v_1$ (f), home detection is modified (g)
+  \end{itemize}
+
+
+
+\end{itemize}
+
+<!---------------------------------------->
+
+<!---------------------------------------->
+
+### Phone users' presence probabilization
+
+\begin{figure}[ht]
+    \centering
+
+\begin{minipage}[t]{0.2\linewidth}
+    \centering
+    \includegraphics[width = \textwidth]{./pics/voro_grid_example/voro1.png}
+\end{minipage} %
+\begin{minipage}[t]{0.2\textwidth}
+    \centering
+    \includegraphics[width = \textwidth]{./pics/voro_grid_example/voro2.png}
+\end{minipage} %
+
+\begin{minipage}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width = \textwidth]{./pics/voro_grid_example/grid1.png}
+\end{minipage} %
+\begin{minipage}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width = \textwidth]{./pics/voro_grid_example/grid2.png}
+\end{minipage} %
+\begin{minipage}[t]{0.25\textwidth}
+  \centering
+  \includegraphics[width = \textwidth]{./pics/voro_grid_example/grid3.png}
+\end{minipage}
+
+\begin{minipage}[t]{0.25\textwidth}
+  \centering
+  \includegraphics[width = \textwidth]{./pics/voro_grid_example/prior1.png}
+\end{minipage} %
+\begin{minipage}[t]{0.25\textwidth}
+  \centering
+  \includegraphics[width = \textwidth]{./pics/voro_grid_example/prior2.png}
+\end{minipage}
+
+\end{figure}
+
+
+<!---------------------------------------->
+
+
+
+## Methodology: more details
+
+<!---------------------------------------->
+### 1. Home estimation {label="methodo home"}
+
+\begin{itemize}
+  \item Nighttime phone track (19h-9h) used to estimate individual residence probability for all cells
+  \item Bayesian approach to account for the fact that all metropolitan space is not residential
+  \begin{itemize}
+    \item In a coverage area, prior in most densily populated cells
+    \item Prior from population density computed from tax data
+  \end{itemize}
+  \item Prior distribution is a reweighting for cell level home
+  \begin{align*}
+    \mathbb{P}_x\big(c_i^{\text{home}}|v_j\big) \propto \underbrace{\mathbb{P}\big(c_i^\text{home}\big)}_{\substack{\text{prior from} \\ \text{population density}}}\underbrace{\mathbb{P}_x\big(v_j|c_i\big)}_{\substack{\text{ areas ratio:} \\ \frac{s(v \cap c)}{s(c)}}}
+  \end{align*}
+  \item Sequence from home probabilities: $\nu_x^{\text{home}}(c_i)$
+  \begin{itemize}
+    \item Used to simulate $x$ income
+  \end{itemize}
+\end{itemize}
+
+\hyperlink{workflow methodo}{\beamerbutton{Back to presentation}}
+
+
+### 2. Home and income simulations
+
+\hfill
+
+\textcolor{darkblue}{4 methods} of home simulation to check robustness of segregation indexes
+
+
+\begin{small}
+\begin{table}[]
+\begin{tabular}{p{0.3\linewidth}p{0.7\textwidth}l}
+\toprule
+\multicolumn{1}{c}{Methodology} & \multicolumn{1}{c}{Choice of $x$'s home} \\
+\midrule
+\textcolor{darkblue}{Main method} & Draw home from all residence probabilities $\nu_x^{\texttt{home}}$  \\
+\textcolor{darkblue}{\texttt{One stage simulation}} &  Cell where probability is maximum: $c_i = \arg \max_{c_i} \nu_x^{\text{home}}(c_i)$ \\
+\textcolor{darkblue}{\texttt{cell\_max\_proba}} & $x$ assigned where probability of being member of group $g$ is maximized\\
+\textcolor{darkblue}{\texttt{cell\_min\_proba}} & $x$ assigned where probability of being member of group $g$ is minimized \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{small}
+
+Last two methods: evaluate effect on segregation indexes to over- or under-estimate the share of sub-group $g$ on population
+\hyperlink{workflow methodo}{\beamerbutton{Back to presentation}}
+
+
+<!---------------------------------------->
+
+
+### 3. Segregation indexes: cell level presence {label=annexeCarreaux}
+
+
+\begin{itemize}
+\item Probability that an event measured in antenna $v_j$ at time $t$ occurred in cell $c_i$ is
+\begin{align*}
+p_i^j := \mathbb{P}\big( c_i | v_j \big) = \frac{\mathbb{P}\big( c_i \cap v_j \big)}{\mathbb{P}(v_j)} = \frac{\mathcal{S}\big( c_i \cap v_j \big)}{\mathcal{S}(v_j)}
+\end{align*}
+\item We denote $c_{it}$ the probability of being present at time $t$ in cell $c_i$. This is a recollection of conditional probabilities
+\begin{align}
+\label{eq: p(c)}
+\forall c_{it} \in \mathcal{C}, \quad \mathbb{P}_x(c_{it}) = \sum_{v_{jt} \in \mathcal{V}} \mathbb{P}\big(c_{it} \big| v_{jt}\big)\mathbb{P}_x(v_{jt})
+\end{align}
+with $\mathcal{V}$ voronoi/antennas and $\mathcal{C}$ 500m cells.
+\end{itemize}
+
+\hyperlink{index prez}{\beamerbutton{Back to presentation}}
+
+## Additional elements:  spatial clustering
+
+### Additional elements:  spatial clustering  {label=clustering}
+
+\hyperlink{segregation results}{\beamerbutton{Back to slide}}
+
+
+\begin{itemize}
+  \item Clustering to identify spaces that share common population composition characteristics
+  \begin{itemize}
+    \item Will be related to places characteristics (infrastructures...)
+  \end{itemize}
+  \item e.g.: share of population belonging to low-income group
+\end{itemize}
+
+

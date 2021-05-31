@@ -1,0 +1,39 @@
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[page number]
+
+\usepackage{tabularx} %Facilite la création de tableaux
+\usepackage{booktabs}
+\usepackage{makecell}
+%\usepackage{subfigure}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+%\usepackage{media9}
+\usepackage{subcaption}
+
+\usepackage{etoolbox}
+\patchcmd{\beamer@sectionintoc}{\vskip1.5em}{\vskip0.5em}{}{}
+
+
+%\usepackage{animate}
+
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,urlcolor=links}
+
+\newif\iflattersubsect
+
+\AtBeginSection[] {
+    \begin{frame}<beamer>
+    \frametitle{Outline} %
+    \tableofcontents[currentsection]
+    \end{frame}
+    \lattersubsectfalse
+}
+
+\AtBeginSubsection[] {
+    \iflattersubsect
+    \begin{frame}<beamer>
+    \frametitle{Outline} %
+    \tableofcontents[currentsubsection]
+    \end{frame}
+    \fi
+    \lattersubsecttrue
+}

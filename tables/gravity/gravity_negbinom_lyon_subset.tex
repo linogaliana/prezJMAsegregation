@@ -1,0 +1,45 @@
+\begin{table}[!htbp] \centering
+ \tiny
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{\extracolsep{5pt}}lcccc}
+  \\[-1.8ex]\hline
+  \hline \\[-1.8ex]
+
+   & \multicolumn{4}{c}{\textit{Dependent variable:}} \\
+\cline{2-5}
+\\[-1.8ex] & \multicolumn{2}{c}{\textsc{Low-income}} & \multicolumn{2}{c}{\textsc{High-income}} \\
+
+ & Selection & Outcome & Selection & Outcome \\
+\hline \\[-1.8ex]
+$p_{j}^{D1}$ in destination cell (tax data) & 2.187$^{***}$ & $-$0.479$^{***}$ & 1.009$^{***}$ & $-$0.392$^{***}$\\
+ & (0.330) & (0.151) & (0.321) & (0.146)\\
+ &  &  &  & \\
+$p_{j}^{D9}$ in destination cell (tax data) & $-$0.573$^{***}$ & 0.538$^{***}$ & $-$0.973$^{***}$ & 0.790$^{***}$\\
+ & (0.134) & (0.087) & (0.144) & (0.088)\\
+ &  &  &  & \\
+ \hline \\[-1.8ex] Distance (suburbs $\to$ suburbs) & $-$3.023$^{***}$ & $-$1.860$^{***}$ & $-$3.367$^{***}$ & $-$1.858$^{***}$\\
+ & (0.035) & (0.020) & (0.041) & (0.020)\\
+ &  &  &  & \\
+Distance (center $\to$ suburbs) & $-$2.665$^{***}$ & $-$1.525$^{***}$ & $-$3.038$^{***}$ & $-$1.530$^{***}$\\
+ & (0.030) & (0.014) & (0.037) & (0.015)\\
+ &  &  &  & \\
+Distance (suburbs $\to$ center) & $-$1.713$^{***}$ & $-$1.553$^{***}$ & $-$1.628$^{***}$ & $-$1.583$^{***}$\\
+ & (0.031) & (0.016) & (0.041) & (0.018)\\
+ &  &  &  & \\
+Distance (center $\to$ center) & $-$1.939$^{***}$ & $-$1.251$^{***}$ & $-$2.345$^{***}$ & $-$1.242$^{***}$\\
+ & (0.034) & (0.017) & (0.039) & (0.017)\\
+ &  &  &  & \\
+\hline \hline \\[-1.8ex]
+$\alpha$ (dispersion) & \multicolumn{2}{c}{1.4} & \multicolumn{2}{c}{1.5} \\
+Count distribution & \multicolumn{2}{c}{Negative Binomial} & \multicolumn{2}{c}{Negative Binomial} \\
+Selection distribution & \multicolumn{2}{c}{Logit} & \multicolumn{2}{c}{Logit} \\
+Observations & \multicolumn{2}{c}{860,362} & \multicolumn{2}{c}{849,734} \\
+Log likelihood (by obs.) & \multicolumn{2}{c}{$-$0.1} & \multicolumn{2}{c}{$-$0.1} \\
+\hline \\[-1.8ex]
+\textit{Note:}  & \multicolumn{4}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\
+ \multicolumn{5}{p{0.9\linewidth}}{\parbox[t]{\textwidth}{Dependent variable $p_{i \to j}^g$: low (resp. high) income density in cell $c_j$ that live in cell $c_i$}} \\
+ \multicolumn{5}{p{0.9\linewidth}}{\parbox[t]{\textwidth}{Other controls: population in home cell, population in destination cell, employment in home cell, employment in destination cell}}
+
+\end{tabular}
+}
+\end{table}
