@@ -1,7 +1,7 @@
 ---
 title: 'Dynamic approach of spatial segregation: a framework with mobile phone data'
 author: "Lino Galiana (INSEE)"
-date: "November 15th, 2019"
+date: "June 4th, 2021"
 institute: |
   | With Benjamin Sakarovitch (INSEE), François Sémécurbe (INSEE) and Zbigniew Smoreda (Orange Labs)
   |
@@ -9,13 +9,11 @@ institute: |
 output:
   beamer_presentation:
     keep_tex: true
-    toc: true
+    toc: false
     slide_level: 3
     theme: "default"
     includes:
       in_header: header_pagenrs.tex
-  keep_tex: true
-  toc: false
 ---
 
 
@@ -161,7 +159,7 @@ to a more complete \href{https://github.com/linogaliana/prezJMAsegregation/blob/
 
 * Main questions:
     + How do mobility affect urban segregation ?
-    + Do high-frequency data help us in identifying patterns in segregation that cannot be understood with administrative data?
+    + Do high-frequency data help us in identifying patterns in segregation that cannot be understand with administrative data?
     + Can we measure heterogeneity in spatial frictions within a city using high resolution mobility flows ?
 \medskip
 
@@ -196,7 +194,7 @@ to a more complete \href{https://github.com/linogaliana/prezJMAsegregation/blob/
     + Theil index series for each city
 \medskip
 
-* Gravity model to measure spatial frictions
+* `r kableExtra::text_spec("Gravity model", color = "darkblue")` to measure spatial frictions
     + Takes into account the zero-flows problem
 \medskip
 
@@ -380,7 +378,7 @@ Number of distincts days users appear between 7PM and 9AM & $15.2$ & $9.4$ & $0$
 ### Segregation dynamics {label="segregation results"}
 
 \begin{itemize}
-\item City-level segregation evolution across time
+\item City-level segregation evolution along time
   \begin{itemize}
   \item People not observed at a given hour of the night (19-9) are assumed to be at home
   \item This removes downward bias in index with respect to tax data
@@ -477,12 +475,12 @@ e.g. Low-income concentration at two different times (6am and 4pm).
 ### Principle {label=clustering}
 
 \begin{itemize}
-  \item Clustering to identify spaces that share common population composition characteristics
+  \item Clustering to identify places that share common population composition characteristics
   \begin{itemize}
     \item Will be related to places characteristics (infrastructures...)
   \end{itemize}
-  \item sequence of low-income and high-income concentrations in our cells
-  \item k-means classification algorithm
+  \item Sequence of low-income and high-income concentrations in our cells
+  \item K-means classification algorithm
   \item 4 clusters is motivated by the trade-off between variety and parsimony.
 \end{itemize}
 
@@ -547,17 +545,30 @@ p_{i \to j}^g = a \frac{M_i^{\beta_1}M_j^{\beta_2}}{D_{ij}^{\beta_3}}
     + Spatial dimension: suburbs vs center
     + Social dimension: low-income vs high-income
 
+* Estimation on a 5% sample to speed up computations (robust to full sample)
 
-\begin{align}
-\begin{array}{c @{} c}
-& p_{i \to j}^g \sim \pi \delta_0 + (1-\pi) \mathcal{NB}(\lambda) \\
-\text{(Selection) \qquad } &  \text{logit}(\pi) = \sum_i \alpha_i z_i + u_i \\
-\text{(Outcome)\qquad} & \lambda(X_{ij}) = \mathbb{E}_{f, \theta}(p_{i \to j}^g|X_{ij}) = \exp(\beta^{\intercal} X_{ij}) \\ \end{array}
-\end{align}
-
-* BIC: Choice of negative binomial (outcome) with probit link (selection)
+\begin{align*}
+% \text{(selection)} & \qquad \pi_i = \Phi(Z_i\gamma) \\
+\text{(selection)} & \qquad \mathbb{P}(p_{i \to j} > 0) = 1 - \pi_{ij} = \frac{\exp(Z_{ij}\gamma)}{1+\exp(Z_{ij}\gamma)} \\
+\text{(outcome)} &  \qquad \lambda_i(X_{ij}) = \mathbb{E}_{f,\theta}(p_{i\to j} | X_{ij}) =  \exp(X_{ij}\beta) 
+\end{align*}
 
 ## Results
+
+### Reader's digest
+
+* Urban structure plays a key role to understand flows intensity
+    + Paris and Lyon: more costly to move from suburban areas to another suburban area
+    + Marseille: travel cost higher in city center
+
+* Related to public transportation
+
++ Low-income people tend to live in places where spatial frictions are higher
+    + Controlling for origin, income plays a more marginal role
+    + Low-income people less likely to move (selection model)
+    + But the gap between coefficients is more limited than differences between suburbs and center
+
+
 
 ### Results (Marseille)
 
